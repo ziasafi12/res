@@ -1,0 +1,40 @@
+# Render Blueprint — Shah Jee Dhaba
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Creates ONE web service that serves both the Express API and the built
+# React frontend (dist/ is served by Express — see server/src/app.js), plus a
+# PostgreSQL instance wired in automatically through DATABASE_URL.
+
+services:
+  - type: web
+    name: shahjee-web
+    runtime: node
+    plan: free
+    # Node version comes from .nvmrc (20).
+    buildCommand: npm run build # installs server/ deps, then runs `vite build`
+    startCommand: npm run seed && npm start # seed menu (idempotent), then serve 0.0.0.0:$PORT
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Generated once by Render and never overwritten on blueprint syncs.
+      - key: JWT_SECRET
+        generateValue: true
+        sync: false
+      # Internal database URL (same region, no TLS overhead). If you paste the
+      # external URL manually instead, its ?sslmode=require is handled by the
+      # server (see server/src/db.js).
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shahjee-db
+          property: connectionString
+      # Must match this service's public URL — update it if you rename the
+      # service. Same-origin requests don't need CORS, but this keeps any
+      # separate-origin API usage working.
+      - key: CORS_ORIGINS
+        value: https://shahjee-web.onrender.com
+
+databases:
+  - name: shahjee-db
+    plan: free

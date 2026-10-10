@@ -1,0 +1,5 @@
+[db] Connected to PostgreSQL.
+[migrate] skip 001_init.sql (already applied)
+[migrate] skip 002_ensure_columns.sql (already applied)
+[migrate] All migrations applied.
+[api] Shah Jee Dhaba API listening on http://localhost:4000
